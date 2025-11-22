@@ -131,4 +131,8 @@ contract FortunaManager is IFortunaManager, Admin {
     function totalParticipants(uint256 roundId) external view override returns (uint256) {
         return _participants[roundId].length;
     }
+
+    function getMaxParticipants(uint256 roundId) external view returns (uint32) {
+        return _maxParticipants[roundId];
+    }
 }

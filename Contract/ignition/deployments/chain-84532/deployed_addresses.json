@@ -1,5 +1,7 @@
 {
   "FortunaCoreModule#FortunaCore": "0x83335f6611ea779bd96361F0e3FE6f48d46b3705",
   "FortunaManagerModule#FortunaManager": "0x085ac613e78Dbd5bABD730eE9833f47e0b859f5b",
-  "FortunaVRFModule#FortunaVRF": "0xa014bc750bda31BeC7630BeDf668F79D5b260bFB"
+  "FortunaVRFModule#FortunaVRF": "0xa014bc750bda31BeC7630BeDf668F79D5b260bFB",
+  "FortunaModule#FortunaManager": "0xb3a56baf45f8BB5D26084EfF29da43De5855fCf7",
+  "FortunaModule#FortunaCore": "0x76725039a335bbefa079781359b3775779A16c48"
 }
