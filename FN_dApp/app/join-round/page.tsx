@@ -6,14 +6,13 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { ChevronLeft, Loader2 } from 'lucide-react'
 import { Header } from '@/components/dashboard/header'
-import { usePrivy } from '@privy-io/react-auth'
-import { ethers } from 'ethers'
-import { fortunaCoreAddress, fortunaCoreABI } from '@/lib/contracts'
-import { signPermit } from '@/lib/permit'
+import { useWallets } from '@privy-io/react-auth'
+
+// ... (rest of the imports)
 
 export default function JoinRoundPage() {
   const router = useRouter()
-  const { user } = usePrivy()
+  const { wallets } = useWallets()
   const [isLoading, setIsLoading] = useState(false)
   const [isFetching, setIsFetching] = useState(true)
   const [activeRoundId, setActiveRoundId] = useState<number | null>(null)
@@ -22,11 +21,13 @@ export default function JoinRoundPage() {
 
   useEffect(() => {
     async function fetchRoundData() {
-      if (!user || !user.wallet) return
+      const wallet = wallets[0];
+      if (!wallet) return
       try {
         setIsFetching(true)
-        const provider = new ethers.BrowserProvider(await user.wallet.getEthersProvider())
-        const contract = new ethers.Contract(fortunaCoreAddress, fortunaCoreABI, provider)
+        const provider = await wallet.getEthereumProvider();
+        const ethersProvider = new ethers.BrowserProvider(provider)
+        const contract = new ethers.Contract(fortunaCoreAddress, fortunaCoreABI, ethersProvider)
         
         const activeId = await contract.getActiveRound()
         setActiveRoundId(Number(activeId))
@@ -43,33 +44,39 @@ export default function JoinRoundPage() {
       }
     }
     fetchRoundData()
-  }, [user])
+  }, [wallets])
 
   const platformFee = entryFee ? (Number(entryFee) * 0.02).toFixed(2) : '0.00'
   const totalCost = entryFee ? (Number(entryFee) + Number(platformFee)).toFixed(2) : '0.00'
 
   const handleJoinRound = async () => {
-    if (!user || !user.wallet || !activeRoundId || !entryFee) return
+    const wallet = wallets[0];
+    if (!wallet || !activeRoundId || !entryFee) return
     setIsLoading(true)
     try {
-      const provider = new ethers.BrowserProvider(await user.wallet.getEthersProvider())
-      const signer = await provider.getSigner()
-      const contract = new ethers.Contract(fortunaCoreAddress, fortunaCoreABI, signer)
+      // Ethers setup for the final transaction
+      const provider = await wallet.getEthereumProvider();
+      const ethersProvider = new ethers.BrowserProvider(provider)
+      const ethersSigner = await ethersProvider.getSigner()
+      const contract = new ethers.Contract(fortunaCoreAddress, fortunaCoreABI, ethersSigner)
       
+      // Viem setup for signing the permit
+      const viemClient = await wallet.getViemClient()
+      const viemAccount = await wallet.getViemAccount()
+
       const permitAmount = ethers.parseUnits(totalCost, 6)
+      
       const signature = await signPermit({
         tokenAddress: process.env.NEXT_PUBLIC_USDC_ADDRESS!,
-        client: provider,
-        account: signer,
+        client: viemClient,
+        account: viemAccount,
         spenderAddress: fortunaCoreAddress,
-        permitAmount,
+        permitAmount: permitAmount,
       })
 
-      const tx = await contract.joinRound(activeRoundId, {
-        gasLimit: 1000000, // High gas limit for safety
-        // Pass the permit signature to the contract
-        // This part of the contract is not implemented in the provided code
-        // data: contract.interface.encodeFunctionData("joinRoundWithPermit", [activeRoundId, permitAmount, signature]),
+      // Call the correct contract method with the signature
+      const tx = await contract.joinRoundWithPermit(activeRoundId, permitAmount, signature, {
+        gasLimit: 1000000,
       })
       
       await tx.wait()

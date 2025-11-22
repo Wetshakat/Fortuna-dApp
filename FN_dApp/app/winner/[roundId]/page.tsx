@@ -13,7 +13,7 @@ export default function WinnerPage({ params }: { params: { roundId: string } }) 
   const [hasClaimedReward, setHasClaimedReward] = useState(false)
 
   const winnerAddress = '0xabc123def456789012345678901234567890abcd'
-  const prizeAmount = 1176.50
+  const prizeAmount = 2
   const roundTime = new Date().toLocaleString()
   const isWinner = true
 

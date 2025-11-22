@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { usePrivy } from '@privy-io/react-auth';
+import { useWallets } from '@privy-io/react-auth';
 import { ethers } from 'ethers';
 
 // USDC ABI (simplified to only include the balanceOf function)
@@ -11,15 +11,22 @@ const USDC_ABI = [
 const USDC_ADDRESS = process.env.NEXT_PUBLIC_USDC_ADDRESS;
 
 export function useUSDCBalance() {
-  const { user } = usePrivy();
+  const { wallets } = useWallets();
   const [balance, setBalance] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchBalance() {
-      if (!user || !user.wallet || !USDC_ADDRESS) {
+      const wallet = wallets[0];
+      if (!wallet) {
         setBalance(null);
+        setLoading(false);
+        return;
+      }
+
+      if (!USDC_ADDRESS) {
+        setError("USDC contract address is not configured. Please set NEXT_PUBLIC_USDC_ADDRESS environment variable.");
         setLoading(false);
         return;
       }
@@ -28,11 +35,11 @@ export function useUSDCBalance() {
         setLoading(true);
         setError(null);
 
-        // Privy provides an Ethers.js provider
-        const provider = new ethers.BrowserProvider(await user.wallet.getEthersProvider());
-        const usdcContract = new ethers.Contract(USDC_ADDRESS, USDC_ABI, provider);
+        const provider = await wallet.getEthereumProvider();
+        const ethersProvider = new ethers.BrowserProvider(provider);
+        const usdcContract = new ethers.Contract(USDC_ADDRESS, USDC_ABI, ethersProvider);
 
-        const walletAddress = user.wallet.address;
+        const walletAddress = wallet.address;
         const rawBalance = await usdcContract.balanceOf(walletAddress);
 
         // USDC has 6 decimal places
@@ -48,7 +55,7 @@ export function useUSDCBalance() {
     }
 
     fetchBalance();
-  }, [user]); // Re-fetch when user object changes
+  }, [wallets]); // Re-fetch when user object changes
 
   return { balance, loading, error };
 }
