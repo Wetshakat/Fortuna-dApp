@@ -11,7 +11,7 @@ export default function PrivyProviderWrapper({ children }: { children: React.Rea
     <PrivyProvider
       appId={process.env.NEXT_PUBLIC_PRIVY_APP_ID ?? ''}
       config={{
-        loginMethods: ['wallet', 'google'],
+        loginMethods: ['wallet', 'google', 'email'],
         defaultChain: baseSepolia,
         supportedChains: [baseSepolia],
         appearance: {
