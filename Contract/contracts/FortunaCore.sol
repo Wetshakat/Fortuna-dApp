@@ -79,7 +79,7 @@ contract FortunaCore is IFortunaCore, Admin {
 
         roundContract.addPlayer(msg.sender);
 
-        emit Events.PlayerJoined(roundId, msg.sender, _entryFee);
+        emit PlayerJoined(roundId, msg.sender, _entryFee);
 
         if (roundContract.isRoundFull() || roundContract.isExpired()) {
             _closeRound(roundId);
@@ -112,7 +112,7 @@ contract FortunaCore is IFortunaCore, Admin {
 
         roundContract.addPlayer(msg.sender);
 
-        emit Events.PlayerJoined(roundId, msg.sender, amount);
+        emit PlayerJoined(roundId, msg.sender, amount);
 
         if (roundContract.isRoundFull() || roundContract.isExpired()) {
             _closeRound(roundId);
@@ -146,7 +146,7 @@ contract FortunaCore is IFortunaCore, Admin {
 
         manager.createRound(currentRoundId, startTime + 60, _entryFee, 50);
 
-        emit Events.NewRoundCreated(currentRoundId, block.timestamp);
+        emit NewRoundCreated(currentRoundId, block.timestamp);
         return currentRoundId;
     }
 
@@ -154,7 +154,7 @@ contract FortunaCore is IFortunaCore, Admin {
         FortunaVRF roundContract = FortunaVRF(roundContracts[roundId]);
         roundContract.closeRound();
 
-        emit Events.RoundClosed(
+        emit RoundClosed(
             roundId,
             manager.totalParticipants(roundId),
             roundContract.getPrizePool()
@@ -183,7 +183,7 @@ contract FortunaCore is IFortunaCore, Admin {
     function setEntryFee(uint256 fee) external onlyAdmin {
         uint256 oldFee = _entryFee;
         _entryFee = fee;
-        emit Events.EntryFeeUpdated(oldFee, fee);
+        emit EntryFeeUpdated(oldFee, fee);
     }
 
     function withdrawPlatformFees(address to) external onlyAdmin {
@@ -192,11 +192,11 @@ contract FortunaCore is IFortunaCore, Admin {
 
     function pause() external onlyAdmin {
         _paused = true;
-        emit Events.SystemPaused(msg.sender);
+        emit SystemPaused(msg.sender);
     }
 
     function unpause() external onlyAdmin {
         _paused = false;
-        emit Events.SystemUnpaused(msg.sender);
+        emit SystemUnpaused(msg.sender);
     }
 }

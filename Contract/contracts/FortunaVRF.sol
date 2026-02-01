@@ -80,7 +80,7 @@ contract FortunaVRF is IFortunaRound, VRFConsumerBaseV2 {
         _participants.push(player);
         _info.playerCount += 1;
 
-        emit Events.PlayerJoined(_info.roundId, player, _info.entryFee);
+        emit PlayerJoined(_info.roundId, player, _info.entryFee);
 
         if (_participants.length == 50) {
             closeRound();
@@ -99,7 +99,7 @@ contract FortunaVRF is IFortunaRound, VRFConsumerBaseV2 {
         if (_info.isClosed) revert Errors.RoundAlreadyClosed();
         _info.isClosed = true;
 
-        emit Events.RoundClosed(
+        emit RoundClosed(
             _info.roundId,
             _participants.length,
             _info.entryFee * _participants.length
@@ -122,7 +122,7 @@ contract FortunaVRF is IFortunaRound, VRFConsumerBaseV2 {
 
         requestId = bytes32(_requestId);
 
-        emit Events.RandomnessRequested(_info.roundId, requestId);
+        emit RandomnessRequested(_info.roundId, requestId);
         return requestId;
     }
 
@@ -132,7 +132,7 @@ contract FortunaVRF is IFortunaRound, VRFConsumerBaseV2 {
         uint256 winnerIndex = randomResult % _participants.length;
         _info.winner = _participants[winnerIndex];
 
-        emit Events.WinnerSelected(
+        emit WinnerSelected(
             _info.roundId,
             _info.winner,
             _info.entryFee * _participants.length
@@ -153,7 +153,7 @@ contract FortunaVRF is IFortunaRound, VRFConsumerBaseV2 {
         usdcToken.transfer(_info.winner, winnerPrize);
         usdcToken.transfer(address(manager), platformFee);
 
-        emit Events.PlatformFeeCollected(_info.roundId, platformFee);
+        emit PlatformFeeCollected(_info.roundId, platformFee);
     }
 
     function getRoundInfo() external view override returns (Types.RoundInfo memory) {
